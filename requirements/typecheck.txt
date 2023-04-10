@@ -1,0 +1,8 @@
+mypy==1.2.0
+types-click
+types-Jinja2
+types-pkg_resources
+types-PyYAML
+types-python-dateutil
+types-tabulate
+types-requests
