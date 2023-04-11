@@ -1,12 +1,1 @@
-fastapi==0.95.0
-pydantic==1.10.7
-hypercorn==0.14.3
-aiohttp==3.8.4
-setuptools==67.6.1
-starlette==0.26.1
-httpx==0.23.3
-grequests==0.6.0
-gevent==22.10.2
-psycopg2-binary==3.1.8
-SQLAlchemy==2.0.9
-SQLAlchemy-Utils==0.40.0
+-e .
