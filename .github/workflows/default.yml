@@ -19,7 +19,7 @@ jobs:
       env:
         REQUIREMENTS_FILE: lint
       run: |
-        python -m pip install -U pip setuptools
+        python -m pip install --upgrade pip setuptools wheel
         set -e
         python -m pip install -U -r requirements/${REQUIREMENTS_FILE}.txt
     - name: Lint with flake8
@@ -48,7 +48,7 @@ jobs:
       env:
         REQUIREMENTS_FILE: typecheck
       run: |
-        python -m pip install -U pip setuptools
+        python -m pip install --upgrade pip setuptools wheel
         python -m pip install -U -r requirements/${REQUIREMENTS_FILE}.txt
     - name: Type check with mypy
       run: |
@@ -76,7 +76,7 @@ jobs:
       env:
         REQUIREMENTS_FILE: test
       run: |
-        python -m pip install -U pip setuptools
+        python -m pip install --upgrade pip setuptools wheel
         python -m pip install -U -r requirements/${REQUIREMENTS_FILE}.txt
     - name: Test with pytest
       env:
