@@ -35,12 +35,17 @@ class RouteStation(BaseModel):
     sequence: Mapped[int] = mapped_column("station_sequence", Integer)
     cumulative_time: Mapped[int] = mapped_column("cumulative_time", Integer)
     # Timetable
-    timetable: Mapped[List["TimetableItem"]] = relationship(back_populates="station")
-    terminal_timetable: Mapped[List["TimetableItem"]] = relationship(back_populates="destination")
-    start_timetable: Mapped[List["TimetableItem"]] = relationship(back_populates="start_station")
+    timetable: Mapped[List["TimetableItem"]] = \
+        relationship(back_populates="station")
+    terminal_timetable: Mapped[List["TimetableItem"]] = \
+        relationship(back_populates="destination")
+    start_timetable: Mapped[List["TimetableItem"]] = \
+        relationship(back_populates="start_station")
     # Realtime
-    realtime: Mapped[List["RealtimeItem"]] = relationship(back_populates="station")
-    terminal_realtime: Mapped[List["RealtimeItem"]] = relationship(back_populates="destination")
+    realtime: Mapped[List["RealtimeItem"]] = \
+        relationship(back_populates="station")
+    terminal_realtime: Mapped[List["RealtimeItem"]] = \
+        relationship(back_populates="destination")
 
 
 class TimetableItem(BaseModel):
@@ -49,15 +54,20 @@ class TimetableItem(BaseModel):
     station_id: Mapped[str] = mapped_column("station_id", String(10))
     station: Mapped["RouteStation"] = relationship(back_populates="timetable")
     # Destination Station
-    destination_id: Mapped[str] = mapped_column("terminal_station_id", String(10))
-    destination: Mapped["RouteStation"] = relationship(back_populates="terminal_timetable")
+    destination_id: Mapped[str] = \
+        mapped_column("terminal_station_id", String(10))
+    destination: Mapped["RouteStation"] = \
+        relationship(back_populates="terminal_timetable")
     # Start Station
-    start_station_id: Mapped[str] = mapped_column("start_station_id", String(10))
-    start_station: Mapped["RouteStation"] = relationship(back_populates="start_timetable")
+    start_station_id: Mapped[str] = \
+        mapped_column("start_station_id", String(10))
+    start_station: Mapped["RouteStation"] = \
+        relationship(back_populates="start_timetable")
     # Time
     weekday: Mapped[str] = mapped_column("weekday", String(10))
     heading: Mapped[str] = mapped_column("up_down_type", String(10))
-    departure_time: Mapped[datetime.time] = mapped_column("departure_time", Time)
+    departure_time: Mapped[datetime.time] = \
+        mapped_column("departure_time", Time)
 
 
 class RealtimeItem(BaseModel):
@@ -66,8 +76,10 @@ class RealtimeItem(BaseModel):
     station_id: Mapped[str] = mapped_column("station_id", String(10))
     station: Mapped["RouteStation"] = relationship(back_populates="realtime")
     # Destination Station
-    destination_id: Mapped[str] = mapped_column("terminal_station_id", String(10))
-    destination: Mapped["RouteStation"] = relationship(back_populates="terminal_realtime")
+    destination_id: Mapped[str] = \
+        mapped_column("terminal_station_id", String(10))
+    destination: Mapped["RouteStation"] = \
+        relationship(back_populates="terminal_realtime")
     # Time
     heading: Mapped[str] = mapped_column("up_down_type", String(10))
     sequence: Mapped[int] = mapped_column("arrival_sequence", Integer)

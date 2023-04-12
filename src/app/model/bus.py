@@ -23,11 +23,13 @@ class Stop(BaseModel):
     routes: Mapped["RouteStop"] = relationship(back_populates="stop")
     # Routes starts from this stop
     start_routes: Mapped["Route"] = relationship(back_populates="start_stop")
-    start_route_stops: Mapped["RouteStop"] = relationship(back_populates="start_stop")
+    start_route_stops: Mapped["RouteStop"] = \
+        relationship(back_populates="start_stop")
     # Routes ends at this stop
     end_routes: Mapped["Route"] = relationship(back_populates="end_stop")
     # Timetable that starts from this stop
-    start_timetables: Mapped[List["TimetableItem"]] = relationship(back_populates="start_stop")
+    start_timetables: Mapped[List["TimetableItem"]] = \
+        relationship(back_populates="start_stop")
 
 
 class Route(BaseModel):
@@ -39,15 +41,18 @@ class Route(BaseModel):
     # Company
     company_id: Mapped[int] = mapped_column("company_id", Integer)
     company_name: Mapped[str] = mapped_column("company_name", String(30))
-    company_telephone: Mapped[str] = mapped_column("company_telephone", String(15))
+    company_telephone: Mapped[str] = \
+        mapped_column("company_telephone", String(15))
     # Region
     discrict: Mapped[int] = mapped_column("district_code", Integer)
     # First Time
     up_first_time: Mapped[datetime.time] = mapped_column("up_first_time", Time)
-    down_first_time: Mapped[datetime.time] = mapped_column("down_first_time", Time)
+    down_first_time: Mapped[datetime.time] = \
+        mapped_column("down_first_time", Time)
     # Last Time
     up_last_time: Mapped[datetime.time] = mapped_column("up_last_time", Time)
-    down_last_time: Mapped[datetime.time] = mapped_column("down_last_time", Time)
+    down_last_time: Mapped[datetime.time] = \
+        mapped_column("down_last_time", Time)
     # Start Stop
     start_stop_id: Mapped[int] = mapped_column("start_stop_id", Integer)
     start_stop: Mapped["Stop"] = relationship(back_populates="start_routes")
@@ -57,7 +62,8 @@ class Route(BaseModel):
     # Route Stops
     route_stops: Mapped["RouteStop"] = relationship(back_populates="route")
     # Timetable
-    timetable: Mapped[List["TimetableItem"]] = relationship(back_populates="route")
+    timetable: Mapped[List["TimetableItem"]] = \
+        relationship(back_populates="route")
 
 
 class RouteStop(BaseModel):
@@ -72,9 +78,11 @@ class RouteStop(BaseModel):
     order: Mapped[int] = mapped_column("stop_sequence", Integer)
     # Start Stop
     start_stop_id: Mapped[int] = mapped_column("start_stop_id", Integer)
-    start_stop: Mapped["Stop"] = relationship(back_populates="start_route_stops")
+    start_stop: Mapped["Stop"] = \
+        relationship(back_populates="start_route_stops")
     # Realtime Arrival Time
-    realtime: Mapped[List["RealtimeItem"]] = relationship(back_populates="route_stop")
+    realtime: Mapped[List["RealtimeItem"]] = \
+        relationship(back_populates="route_stop")
 
 
 class TimetableItem(BaseModel):
@@ -84,10 +92,12 @@ class TimetableItem(BaseModel):
     route: Mapped["Route"] = relationship(back_populates="timetable")
     # Start Stop - Timetable: 1 - N
     start_stop_id: Mapped[int] = mapped_column("start_stop_id", Integer)
-    start_stop: Mapped["Stop"] = relationship(back_populates="start_timetables")
+    start_stop: Mapped["Stop"] = \
+        relationship(back_populates="start_timetables")
     # Timetable
     weekday: Mapped[str] = mapped_column("weekday", String(10))
-    departure_time: Mapped[datetime.time] = mapped_column("departure_time", Time)
+    departure_time: Mapped[datetime.time] = \
+        mapped_column("departure_time", Time)
 
 
 class RealtimeItem(BaseModel):
@@ -101,4 +111,5 @@ class RealtimeItem(BaseModel):
     seat: Mapped[int] = mapped_column("remaining_seat_count", Integer)
     minutes: Mapped[int] = mapped_column("remaining_time", Integer)
     low_floor: Mapped[bool] = mapped_column("low_plate", Boolean)
-    last_updated_time: Mapped[datetime.time] = mapped_column("last_updated_time", DateTime)
+    last_updated_time: Mapped[datetime.time] = \
+        mapped_column("last_updated_time", DateTime)

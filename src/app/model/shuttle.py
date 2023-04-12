@@ -42,41 +42,53 @@ class Route(BaseModel):
 class RouteStop(BaseModel):
     __table__ = "shuttle_route_stop"
     # Route - RouteStop: 1 - N
-    route_name: Mapped[str] = mapped_column("route_name", String(15), primary_key=True)
+    route_name: Mapped[str] = \
+        mapped_column("route_name", String(15), primary_key=True)
     route: Mapped["Route"] = relationship(back_populates="stops")
     # Stop - RouteStop: 1 - N
-    stop_name: Mapped[str] = mapped_column("stop_name", String(15), primary_key=True)
+    stop_name: Mapped[str] = \
+        mapped_column("stop_name", String(15), primary_key=True)
     stop: Mapped["Stop"] = relationship(back_populates="routes")
     # RouteStop
     stop_order: Mapped[int] = mapped_column("stop_order", Integer)
     cumulative_time: Mapped[int] = mapped_column("cumulative_time", Integer)
     # Timetable
-    timetable: Mapped[List["TimetableItem"]] = relationship(back_populates="route_stop")
+    timetable: Mapped[List["TimetableItem"]] = \
+        relationship(back_populates="route_stop")
 
 
 class PeriodType(BaseModel):
     __table__ = "shuttle_period_type"
-    name: Mapped[str] = mapped_column("period_type_name", String(20), primary_key=True)
+    name: Mapped[str] = \
+        mapped_column("period_type_name", String(20), primary_key=True)
     # Periods that this type is a part of
     periods: Mapped["Period"] = relationship(back_populates="type")
 
 
 class Period(BaseModel):
-    period_type_name: Mapped[str] = mapped_column("period_type", String(20), primary_key=True)
+    period_type_name: Mapped[str] = \
+        mapped_column("period_type", String(20), primary_key=True)
     period_type: Mapped["PeriodType"] = relationship(back_populates="periods")
     # Period
-    start: Mapped[datetime.datetime] = mapped_column("period_start", DateTime, primary_key=True)
-    end: Mapped[datetime.datetime] = mapped_column("period_end", DateTime, primary_key=True)
+    start: Mapped[datetime.datetime] = \
+        mapped_column("period_start", DateTime, primary_key=True)
+    end: Mapped[datetime.datetime] = \
+        mapped_column("period_end", DateTime, primary_key=True)
 
 
 class TimetableItem(BaseModel):
     # Period - TimetableItem: 1 - N
-    period_type_name: Mapped[str] = mapped_column("period_type", String(20), primary_key=True)
-    period_type: Mapped["PeriodType"] = relationship(back_populates="timetable")
+    period_type_name: Mapped[str] = \
+        mapped_column("period_type", String(20), primary_key=True)
+    period_type: Mapped["PeriodType"] = \
+        relationship(back_populates="timetable")
     # Weekday
     weekday: Mapped[bool] = mapped_column("weekday", Boolean, primary_key=True)
     # RouteStop - TimetableItem: 1 - N
-    route_name: Mapped[str] = mapped_column("route_name", String(15), primary_key=True)
-    stop_name: Mapped[str] = mapped_column("stop_name", String(15), primary_key=True)
+    route_name: Mapped[str] = \
+        mapped_column("route_name", String(15), primary_key=True)
+    stop_name: Mapped[str] = \
+        mapped_column("stop_name", String(15), primary_key=True)
     route_stop: Mapped["RouteStop"] = relationship(back_populates="timetable")
-    departure_time: Mapped[datetime.datetime] = mapped_column("departure_time", DateTime, primary_key=True)
+    departure_time: Mapped[datetime.datetime] = \
+        mapped_column("departure_time", DateTime, primary_key=True)

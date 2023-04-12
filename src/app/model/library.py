@@ -22,4 +22,5 @@ class ReadingRoom(BaseModel):
     occupied_seats: Mapped[int] = mapped_column("occupied", Integer)
     available_seats: Mapped[int] = mapped_column("available", Integer)
     # Last Update Time
-    last_updated_time: Mapped[datetime.datetime] = mapped_column("last_updated_time", DateTime)
+    last_updated_time: Mapped[datetime.datetime] = \
+        mapped_column("last_updated_time", DateTime)
