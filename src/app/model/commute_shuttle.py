@@ -9,7 +9,8 @@ from app.model import BaseModel
 
 class Stop(BaseModel):
     __table__ = "commute_shuttle_stop"
-    name: Mapped[str] = mapped_column("stop_name", String(50), primary_key=True)
+    name: Mapped[str] = \
+        mapped_column("stop_name", String(50), primary_key=True)
     description: Mapped[str] = mapped_column("description", String(100))
     latitude: Mapped[float] = mapped_column("latitude", Float)
     longitude: Mapped[float] = mapped_column("longitude", Float)
