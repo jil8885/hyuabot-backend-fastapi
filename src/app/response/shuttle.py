@@ -57,7 +57,3 @@ class TagStopTimetableItemResponse(BaseModel):
 class TagStopTimetableResponse(TagStopResponse):
     weekdays: list[TagStopTimetableItemResponse] = Field(..., alias="weekdays")
     weekends: list[TagStopTimetableItemResponse] = Field(..., alias="weekends")
-
-
-class TagStopResponse(StopResponse):
-    tag_list: list[TagStopResponse] = Field(..., alias="tag")

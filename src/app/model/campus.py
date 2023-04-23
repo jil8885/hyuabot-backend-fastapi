@@ -1,10 +1,9 @@
-from typing import List, TYPE_CHECKING
+from typing import List
 
 from sqlalchemy import Integer, String
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from app.model import BaseModel
-
 from app.model.cafeteria import Restaurant
 from app.model.library import ReadingRoom
 

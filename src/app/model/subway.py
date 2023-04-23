@@ -8,14 +8,14 @@ from app.model import BaseModel
 
 
 class Station(BaseModel):
-    __table__ = "subway_station"
+    __tablename__ = "subway_station"
     name: Mapped[str] = mapped_column("station_name", String(30))
     # Station - Line: 1 - N
     lines: Mapped["RouteStation"] = relationship(back_populates="station")
 
 
 class Line(BaseModel):
-    __table__ = "subway_route"
+    __tablename__ = "subway_route"
     id: Mapped[int] = mapped_column("route_id", Integer)
     name: Mapped[str] = mapped_column("route_name", String(30))
     # Line - Station: 1 - N
@@ -23,7 +23,7 @@ class Line(BaseModel):
 
 
 class RouteStation(BaseModel):
-    __table__ = "subway_route_station"
+    __tablename__ = "subway_route_station"
     id: Mapped[str] = mapped_column("station_id", String(10))
     # Line - Station: 1 - N
     line_id: Mapped[int] = mapped_column("route_id", Integer)
@@ -49,7 +49,7 @@ class RouteStation(BaseModel):
 
 
 class TimetableItem(BaseModel):
-    __table__ = "subway_timetable"
+    __tablename__ = "subway_timetable"
     # Current Station
     station_id: Mapped[str] = mapped_column("station_id", String(10))
     station: Mapped["RouteStation"] = relationship(back_populates="timetable")
@@ -71,7 +71,7 @@ class TimetableItem(BaseModel):
 
 
 class RealtimeItem(BaseModel):
-    __table__ = "subway_realtime"
+    __tablename__ = "subway_realtime"
     # Current Station
     station_id: Mapped[str] = mapped_column("station_id", String(10))
     station: Mapped["RouteStation"] = relationship(back_populates="realtime")

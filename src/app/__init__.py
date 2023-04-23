@@ -1,7 +1,7 @@
 # Module for creating FastAPI app and adding middleware and routers.
 import functools
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.gzip import GZipMiddleware
@@ -71,7 +71,7 @@ async def _web_app_startup(app: App, settings: AppSettings) -> None:
 async def _web_app_shutdown(app: App) -> None:
     """Function to execute on shutdown.
     Args:
-        app (FastAPI): FastAPI application.
+        app (App): FastAPI application.
     """
     context = AppContext.from_app(app)
     await context.db_engine.dispose()

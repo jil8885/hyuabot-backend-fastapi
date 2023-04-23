@@ -20,7 +20,7 @@ campus_router = APIRouter()
 @campus_router.get('', response_model=CampusListResponse)
 async def get_campus_list(
     name: str = None,
-    db_session: AsyncSession = Depends(get_db_session)
+    db_session: AsyncSession = Depends(get_db_session),
 ):
     """Function to get a list of all campuses.
     Returns:
@@ -31,7 +31,7 @@ async def get_campus_list(
     else:
         statement = select(Campus)
     query_result = (await db_session.execute(
-        statement.options(load_only(Campus.id, Campus.name))
+        statement.options(load_only(Campus.id, Campus.name)),
     )).scalars().all()
 
     search_result = []
@@ -56,7 +56,7 @@ async def get_campus(
     """
     statement = select(Campus).where(Campus.id == campus_id)
     query_result = (await db_session.execute(
-        statement
+        statement,
     )).scalars().one_or_none()
     if query_result is None:
         return JSONResponse(

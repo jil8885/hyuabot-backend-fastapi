@@ -8,7 +8,7 @@ from app.model import BaseModel
 
 
 class Stop(BaseModel):
-    __table__ = "shuttle_stop"
+    __tablename__ = "shuttle_stop"
     name: Mapped[str] = \
         mapped_column("stop_name", String(15), primary_key=True)
     # Location
@@ -23,7 +23,7 @@ class Stop(BaseModel):
 
 
 class Route(BaseModel):
-    __table__ = "shuttle_route"
+    __tablename__ = "shuttle_route"
     name: Mapped[str] = \
         mapped_column("route_name", String(15), primary_key=True)
     # Description
@@ -62,7 +62,7 @@ class RouteStop(BaseModel):
 
 
 class PeriodType(BaseModel):
-    __table__ = "shuttle_period_type"
+    __tablename__ = "shuttle_period_type"
     name: Mapped[str] = \
         mapped_column("period_type_name", String(20), primary_key=True)
     # Periods that this type is a part of
@@ -70,6 +70,7 @@ class PeriodType(BaseModel):
 
 
 class Period(BaseModel):
+    __tablename__ = "shuttle_period"
     period_type_name: Mapped[str] = \
         mapped_column("period_type", String(20), primary_key=True)
     period_type: Mapped["PeriodType"] = relationship(back_populates="periods")
@@ -81,6 +82,7 @@ class Period(BaseModel):
 
 
 class TimetableItem(BaseModel):
+    __tablename__ = "shuttle_timetable"
     # Period - TimetableItem: 1 - N
     period_type_name: Mapped[str] = \
         mapped_column("period_type", String(20), primary_key=True)

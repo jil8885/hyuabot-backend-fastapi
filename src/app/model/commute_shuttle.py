@@ -8,7 +8,7 @@ from app.model import BaseModel
 
 
 class Stop(BaseModel):
-    __table__ = "commute_shuttle_stop"
+    __tablename__ = "commute_shuttle_stop"
     name: Mapped[str] = \
         mapped_column("stop_name", String(50), primary_key=True)
     description: Mapped[str] = mapped_column("description", String(100))
@@ -19,7 +19,7 @@ class Stop(BaseModel):
 
 
 class Route(BaseModel):
-    __table__ = "commute_shuttle_route"
+    __tablename__ = "commute_shuttle_route"
     name: Mapped[str] = \
         mapped_column("route_name", String(15), primary_key=True)
     korean: Mapped[str] = \
@@ -31,7 +31,7 @@ class Route(BaseModel):
 
 
 class TimetableItem(BaseModel):
-    __table__ = "commute_shuttle_timetable"
+    __tablename__ = "commute_shuttle_timetable"
     # Route - Timetable: 1 - N
     route_name: Mapped[str] = \
         mapped_column("route_name", String(15), primary_key=True)

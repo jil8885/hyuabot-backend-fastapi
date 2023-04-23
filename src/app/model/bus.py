@@ -8,7 +8,7 @@ from app.model import BaseModel
 
 
 class Stop(BaseModel):
-    __table__ = "bus_stop"
+    __tablename__ = "bus_stop"
     id: Mapped[int] = mapped_column("stop_id", Integer, primary_key=True)
     name: Mapped[str] = mapped_column("stop_name", String(30))
     # Location
@@ -33,7 +33,7 @@ class Stop(BaseModel):
 
 
 class Route(BaseModel):
-    __table__ = "bus_route"
+    __tablename__ = "bus_route"
     id: Mapped[int] = mapped_column("route_id", Integer, primary_key=True)
     name: Mapped[str] = mapped_column("route_name", String(30))
     type_code: Mapped[str] = mapped_column("route_type_code", String(10))
@@ -67,7 +67,7 @@ class Route(BaseModel):
 
 
 class RouteStop(BaseModel):
-    __table__ = "bus_route_stop"
+    __tablename__ = "bus_route_stop"
     # Route - RouteStop: 1 - 1
     route_id: Mapped[int] = mapped_column("route_id", Integer)
     route: Mapped["Route"] = relationship(back_populates="route_stops")
@@ -86,7 +86,7 @@ class RouteStop(BaseModel):
 
 
 class TimetableItem(BaseModel):
-    __table__ = "bus_timetable"
+    __tablename__ = "bus_timetable"
     # Route - Timetable: 1 - N
     route_id: Mapped[int] = mapped_column("route_id", Integer)
     route: Mapped["Route"] = relationship(back_populates="timetable")
