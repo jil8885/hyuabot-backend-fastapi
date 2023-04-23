@@ -61,6 +61,6 @@ async def get_campus(
     if query_result is None:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
-            content='Campus not found',
+            content={'message': 'Campus not found'},
         )
     return CampusListItemResponse(id=query_result.id, name=query_result.name)
