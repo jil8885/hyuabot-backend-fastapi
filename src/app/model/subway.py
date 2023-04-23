@@ -1,7 +1,7 @@
 import datetime
 from typing import List
 
-from sqlalchemy import String, Integer, Time, Boolean
+from sqlalchemy import String, Integer, Time, Boolean, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.model import BaseModel
@@ -90,3 +90,5 @@ class RealtimeItem(BaseModel):
     express: Mapped[bool] = mapped_column("is_express", Boolean)
     last: Mapped[bool] = mapped_column("is_last_train", Boolean)
     status: Mapped[int] = mapped_column("status_code", Integer)
+    last_updated_at: Mapped[datetime.datetime] = \
+        mapped_column("last_updated_at", DateTime)
