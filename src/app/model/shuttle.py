@@ -44,7 +44,7 @@ class Route(BaseModel):
 
 
 class RouteStop(BaseModel):
-    __table__ = "shuttle_route_stop"
+    __tablename__ = "shuttle_route_stop"
     # Route - RouteStop: 1 - N
     route_name: Mapped[str] = \
         mapped_column("route_name", String(15), primary_key=True)

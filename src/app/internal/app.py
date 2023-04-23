@@ -10,7 +10,7 @@ class Extra:
 
 
 class App(FastAPI):
-    extra: Extra
+    extra: Extra  # type: ignore
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

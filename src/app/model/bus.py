@@ -101,7 +101,7 @@ class TimetableItem(BaseModel):
 
 
 class RealtimeItem(BaseModel):
-    __table__ = "bus_realtime"
+    __tablename__ = "bus_realtime"
     # RouteStop - Realtime: 1 - N
     route_id: Mapped[int] = mapped_column("route_id", Integer)
     stop_id: Mapped[int] = mapped_column("stop_id", Integer)

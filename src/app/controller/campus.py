@@ -19,7 +19,7 @@ campus_router = APIRouter()
 
 @campus_router.get('', response_model=CampusListResponse)
 async def get_campus_list(
-    name: str = None,
+    name: str | None = None,
     db_session: AsyncSession = Depends(get_db_session),
 ):
     """Function to get a list of all campuses.
