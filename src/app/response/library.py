@@ -2,7 +2,7 @@ import datetime
 
 from pydantic import BaseModel, Field
 
-from app.response.campus import Campus
+from app.response.campus import CampusListItemResponse
 
 
 class ReadingRoomInformation(BaseModel):
@@ -25,5 +25,5 @@ class ReadingRoom(BaseModel):
     updated_at: datetime.datetime = Field(..., alias="updated_at")
 
 
-class CampusReadingRoomResponse(Campus):
+class CampusReadingRoomResponse(CampusListItemResponse):
     reading_rooms: list[ReadingRoom] = Field(..., alias="rooms")
