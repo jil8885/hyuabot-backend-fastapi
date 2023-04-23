@@ -7,22 +7,10 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.gzip import GZipMiddleware
 
 from app.dependancies.database import get_db_session
+from app.internal.app import App
 from app.internal.config import AppSettings
 from app.internal.context import AppContext
 from app.controller.campus import campus_router
-
-
-class Extra:
-    settings: AppSettings
-    context: AppContext
-
-
-class App(FastAPI):
-    extra: Extra
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.extra = Extra()
 
 
 async def get_context(db_session: AsyncSession = Depends(get_db_session)) \

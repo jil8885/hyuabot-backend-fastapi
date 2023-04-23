@@ -3,13 +3,12 @@ from __future__ import annotations
 
 from typing import NamedTuple, TYPE_CHECKING
 
-from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-from app import App
 
 if TYPE_CHECKING:
     from app.internal.config import AppSettings
+    from app.internal.app import App
 
 
 class AppContext(NamedTuple):
@@ -32,6 +31,6 @@ class AppContext(NamedTuple):
             RuntimeError: If the application context is not initialized.
         """
         try:
-            return app.extra['context']
+            return app.extra.context
         except KeyError:
             raise RuntimeError('App context is not initialized')
