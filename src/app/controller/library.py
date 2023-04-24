@@ -87,7 +87,7 @@ async def get_reading_room(
         ReadomgRoomResponse: Response contains a reading room
     """
     statement = select(ReadingRoom).where(
-        and_(ReadingRoom.campus_id == campus_id, ReadingRoom.id == room_id)
+        and_(ReadingRoom.campus_id == campus_id, ReadingRoom.id == room_id),
     )
     reading_room = (await db_session.execute(statement))\
         .scalars().one_or_none()
