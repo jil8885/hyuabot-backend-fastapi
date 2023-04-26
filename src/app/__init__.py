@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.gzip import GZipMiddleware
 
+from app.controller.cafeteria import cafeteria_router
 from app.controller.library import library_router
 from app.dependancies.database import get_db_session
 from app.internal.app import App
@@ -52,6 +53,9 @@ def create_app(settings: AppSettings) -> App:
     app.extra.settings = settings
     app.include_router(campus_router, prefix='/campus', tags=['campus'])
     app.include_router(library_router, prefix='/library', tags=['library'])
+    app.include_router(
+        cafeteria_router, prefix='/cafeteria', tags=['cafeteria'],
+    )
     return app
 
 

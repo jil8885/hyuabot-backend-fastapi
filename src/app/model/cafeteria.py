@@ -20,7 +20,7 @@ class Restaurant(BaseModel):
     latitude: Mapped[float] = mapped_column('latitude', Float)
     longitude: Mapped[float] = mapped_column('longitude', Float)
     # Menu
-    menus: Mapped['Menu'] = relationship(back_populates='restaurant')
+    menus: Mapped[list['Menu']] = relationship(back_populates='restaurant')
 
 
 class Menu(BaseModel):
