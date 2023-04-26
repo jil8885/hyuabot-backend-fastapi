@@ -7,17 +7,16 @@ import datetime
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
-from sqlalchemy import select, and_
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from starlette import status
 
 from app.dependancies.database import get_db_session
-from app.model.cafeteria import Restaurant, Menu
+from app.model.cafeteria import Restaurant
 from app.model.campus import Campus
+from app.response.cafeteria import Restaurant as RestaurantResponse, Menu
 from app.response.cafeteria import RestaurantList, RestaurantLocation
-from app.response.cafeteria import Restaurant as RestaurantResponse
-
 
 cafeteria_router = APIRouter()
 
@@ -55,7 +54,7 @@ async def get_restaurant_list(
     statement = select(Campus).\
         where(Campus.id == campus_id).\
         options(
-            selectinload(Campus.restaurants).selectinload(Restaurant.menus)
+            selectinload(Campus.restaurants).selectinload(Restaurant.menus),
         )
     query_result = (
         await db_session.execute(statement)
@@ -69,18 +68,18 @@ async def get_restaurant_list(
     result = query_result[0]
     restaurants = []
     for restaurant in result.restaurants:
-        menus = []
+        menus: list[Menu] = []
         for menu in filter(lambda x: (
             (x.date == feed_date
              and (time_slot in x.slot if not all else True))
         ), restaurant.menus):
             menus.append(
-                {
-                    'date': menu.date,
-                    'slot': menu.slot,
-                    'food': menu.food,
-                    'price': menu.price,
-                }
+                Menu(
+                    date=menu.date,
+                    slot=menu.slot,
+                    food=menu.food,
+                    price=menu.price,
+                ),
             )
         restaurants.append(
             RestaurantResponse(
@@ -90,7 +89,7 @@ async def get_restaurant_list(
                     longitude=restaurant.longitude,
                 ),
                 menu=menus,
-            )
+            ),
         )
     return RestaurantList(
         id=result.id,
