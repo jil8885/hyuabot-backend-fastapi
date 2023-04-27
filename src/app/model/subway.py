@@ -1,94 +1,146 @@
 import datetime
 from typing import List
 
-from sqlalchemy import String, Integer, Time, Boolean, DateTime
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import String, Integer, Time, Boolean, DateTime, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship, backref
 
 from app.model import BaseModel
 
 
 class Station(BaseModel):
-    __tablename__ = "subway_station"
-    name: Mapped[str] = mapped_column("station_name", String(30))
+    __tablename__ = 'subway_station'
+    name: Mapped[str] = \
+        mapped_column('station_name', String(30), primary_key=True)
     # Station - Line: 1 - N
-    lines: Mapped["RouteStation"] = relationship(back_populates="station")
+    lines: Mapped[List['RouteStation']] = \
+        relationship(back_populates='station')
 
 
 class Line(BaseModel):
-    __tablename__ = "subway_route"
-    id: Mapped[int] = mapped_column("route_id", Integer)
-    name: Mapped[str] = mapped_column("route_name", String(30))
+    __tablename__ = 'subway_route'
+    id: Mapped[int] = mapped_column('route_id', Integer, primary_key=True)
+    name: Mapped[str] = mapped_column('route_name', String(30))
     # Line - Station: 1 - N
-    stations: Mapped["RouteStation"] = relationship(back_populates="line")
+    stations: Mapped[List['RouteStation']] = \
+        relationship(back_populates='line')
 
 
 class RouteStation(BaseModel):
-    __tablename__ = "subway_route_station"
-    id: Mapped[str] = mapped_column("station_id", String(10))
+    __tablename__ = 'subway_route_station'
+    id: Mapped[str] = mapped_column('station_id', String(10), primary_key=True)
     # Line - Station: 1 - N
-    line_id: Mapped[int] = mapped_column("route_id", Integer)
-    line: Mapped["Line"] = relationship(back_populates="stations")
+    line_id: Mapped[int] = mapped_column(
+        'route_id', ForeignKey('subway_route.route_id'))
+    line: Mapped['Line'] = relationship(back_populates='stations')
     # Station - Line: 1 - N
-    station_name: Mapped[str] = mapped_column("station_name", String(30))
-    station: Mapped["Station"] = relationship(back_populates="lines")
+    station_name: Mapped[str] = \
+        mapped_column(
+            'station_name', ForeignKey('subway_station.station_name'))
+    station: Mapped['Station'] = relationship(
+        back_populates='lines',
+        uselist=False,
+    )
     # Station Order
-    sequence: Mapped[int] = mapped_column("station_sequence", Integer)
-    cumulative_time: Mapped[int] = mapped_column("cumulative_time", Integer)
+    sequence: Mapped[int] = mapped_column('station_sequence', Integer)
+    cumulative_time: Mapped[int] = mapped_column('cumulative_time', Integer)
     # Timetable
-    timetable: Mapped[List["TimetableItem"]] = \
-        relationship(back_populates="station")
-    terminal_timetable: Mapped[List["TimetableItem"]] = \
-        relationship(back_populates="destination")
-    start_timetable: Mapped[List["TimetableItem"]] = \
-        relationship(back_populates="start_station")
+    timetable: Mapped[List['TimetableItem']] = \
+        relationship(
+            'TimetableItem',
+            primaryjoin='RouteStation.id == TimetableItem.station_id',
+            back_populates='station',
+        )
     # Realtime
-    realtime: Mapped[List["RealtimeItem"]] = \
-        relationship(back_populates="station")
-    terminal_realtime: Mapped[List["RealtimeItem"]] = \
-        relationship(back_populates="destination")
+    realtime: Mapped[List['RealtimeItem']] = \
+        relationship(
+            'RealtimeItem',
+            primaryjoin='RouteStation.id == RealtimeItem.station_id',
+            back_populates='station',
+            order_by='RealtimeItem.minute',
+        )
 
 
 class TimetableItem(BaseModel):
-    __tablename__ = "subway_timetable"
+    __tablename__ = 'subway_timetable'
     # Current Station
-    station_id: Mapped[str] = mapped_column("station_id", String(10))
-    station: Mapped["RouteStation"] = relationship(back_populates="timetable")
+    station_id: Mapped[str] = \
+        mapped_column(
+            'station_id',
+            ForeignKey('subway_route_station.station_id'),
+            primary_key=True,
+        )
+    station: Mapped['RouteStation'] = relationship(
+        'RouteStation',
+        foreign_keys='TimetableItem.station_id',
+        uselist=False,
+    )
     # Destination Station
     destination_id: Mapped[str] = \
-        mapped_column("terminal_station_id", String(10))
-    destination: Mapped["RouteStation"] = \
-        relationship(back_populates="terminal_timetable")
+        mapped_column(
+            'terminal_station_id',
+            ForeignKey('subway_route_station.station_id'),
+        )
+    destination: Mapped['RouteStation'] = \
+        relationship(
+            'RouteStation',
+            foreign_keys='TimetableItem.destination_id',
+        )
     # Start Station
     start_station_id: Mapped[str] = \
-        mapped_column("start_station_id", String(10))
-    start_station: Mapped["RouteStation"] = \
-        relationship(back_populates="start_timetable")
+        mapped_column(
+            'start_station_id',
+            ForeignKey('subway_route_station.station_id'),
+        )
+    start_station: Mapped['RouteStation'] = \
+        relationship(
+            'RouteStation',
+            foreign_keys='TimetableItem.start_station_id',
+        )
     # Time
-    weekday: Mapped[str] = mapped_column("weekday", String(10))
-    heading: Mapped[str] = mapped_column("up_down_type", String(10))
+    weekday: Mapped[str] = mapped_column(
+        'weekday', String(10), primary_key=True)
+    heading: Mapped[str] = mapped_column(
+        'up_down_type', String(10), primary_key=True)
     departure_time: Mapped[datetime.time] = \
-        mapped_column("departure_time", Time)
+        mapped_column('departure_time', Time, primary_key=True)
 
 
 class RealtimeItem(BaseModel):
-    __tablename__ = "subway_realtime"
+    __tablename__ = 'subway_realtime'
     # Current Station
-    station_id: Mapped[str] = mapped_column("station_id", String(10))
-    station: Mapped["RouteStation"] = relationship(back_populates="realtime")
+    station_id: Mapped[str] = \
+        mapped_column(
+            'station_id',
+            ForeignKey('subway_route_station.station_id'),
+            primary_key=True,
+        )
+    station: Mapped['RouteStation'] = relationship(
+        'RouteStation',
+        foreign_keys='RealtimeItem.station_id',
+        primaryjoin='RealtimeItem.station_id == RouteStation.id',
+        uselist=False,
+    )
     # Destination Station
     destination_id: Mapped[str] = \
-        mapped_column("terminal_station_id", String(10))
-    destination: Mapped["RouteStation"] = \
-        relationship(back_populates="terminal_realtime")
+        mapped_column('terminal_station_id', String(10))
+    destination: Mapped['RouteStation'] = \
+        relationship(
+            'RouteStation',
+            foreign_keys='RealtimeItem.destination_id',
+            primaryjoin='RealtimeItem.destination_id == RouteStation.id',
+            backref=backref('destination', uselist=False),
+        )
     # Time
-    heading: Mapped[str] = mapped_column("up_down_type", String(10))
-    sequence: Mapped[int] = mapped_column("arrival_sequence", Integer)
-    location: Mapped[str] = mapped_column("current_station_name", String(30))
-    stop: Mapped[int] = mapped_column("remaining_stop_count", Integer)
-    minute: Mapped[int] = mapped_column("remaining_time", Integer)
-    train: Mapped[str] = mapped_column("train_number", String(10))
-    express: Mapped[bool] = mapped_column("is_express", Boolean)
-    last: Mapped[bool] = mapped_column("is_last_train", Boolean)
-    status: Mapped[int] = mapped_column("status_code", Integer)
+    heading: Mapped[str] = mapped_column(
+        'up_down_type', String(10), primary_key=True)
+    sequence: Mapped[int] = mapped_column(
+        'arrival_sequence', Integer, primary_key=True)
+    location: Mapped[str] = mapped_column('current_station_name', String(30))
+    stop: Mapped[int] = mapped_column('remaining_stop_count', Integer)
+    minute: Mapped[int] = mapped_column('remaining_time', Integer)
+    train: Mapped[str] = mapped_column('train_number', String(10))
+    express: Mapped[bool] = mapped_column('is_express_train', Boolean)
+    last: Mapped[bool] = mapped_column('is_last_train', Boolean)
+    status: Mapped[int] = mapped_column('status_code', Integer)
     last_updated_at: Mapped[datetime.datetime] = \
-        mapped_column("last_updated_at", DateTime)
+        mapped_column('last_updated_time', DateTime)
