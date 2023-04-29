@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.gzip import GZipMiddleware
 
+from app.controller.bus import bus_router
 from app.controller.cafeteria import cafeteria_router
 from app.controller.library import library_router
 from app.controller.subway import subway_router
@@ -58,6 +59,7 @@ def create_app(settings: AppSettings) -> App:
         cafeteria_router, prefix='/cafeteria', tags=['cafeteria'],
     )
     app.include_router(subway_router, prefix='/subway', tags=['subway'])
+    app.include_router(bus_router, prefix='/bus', tags=['bus'])
     return app
 
 
