@@ -8,6 +8,7 @@ from starlette.middleware.gzip import GZipMiddleware
 
 from app.controller.bus import bus_router
 from app.controller.cafeteria import cafeteria_router
+from app.controller.commute_shuttle import commute_shuttle_router
 from app.controller.library import library_router
 from app.controller.subway import subway_router
 from app.dependancies.database import get_db_session
@@ -60,6 +61,9 @@ def create_app(settings: AppSettings) -> App:
     )
     app.include_router(subway_router, prefix='/subway', tags=['subway'])
     app.include_router(bus_router, prefix='/bus', tags=['bus'])
+    app.include_router(
+        commute_shuttle_router, prefix='/commute-shuttle', tags=['commute'],
+    )
     return app
 
 

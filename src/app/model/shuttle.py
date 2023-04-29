@@ -7,94 +7,164 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.model import BaseModel
 
 
-class Stop(BaseModel):
-    __tablename__ = "shuttle_stop"
+class ShuttleStop(BaseModel):
+    __tablename__ = 'shuttle_stop'
     name: Mapped[str] = \
-        mapped_column("stop_name", String(15), primary_key=True)
+        mapped_column('stop_name', String(15), primary_key=True)
     # Location
-    latitude: Mapped[float] = mapped_column("latitude", Float)
-    longitude: Mapped[float] = mapped_column("longitude", Float)
-    # Routes that start from this stop
-    start_routes: Mapped["Route"] = relationship(back_populates="start_stop")
-    # Routes that end at this stop
-    end_routes: Mapped["Route"] = relationship(back_populates="end_stop")
+    latitude: Mapped[float] = mapped_column('latitude', Float)
+    longitude: Mapped[float] = mapped_column('longitude', Float)
     # Routes that this stop is a part of
-    routes: Mapped["RouteStop"] = relationship(back_populates="stop")
+    routes: Mapped[list['ShuttleRouteStop']] = relationship(
+        'ShuttleRouteStop',
+        foreign_keys='ShuttleStop.name',
+        primaryjoin='ShuttleStop.name == ShuttleRouteStop.stop_name',
+        uselist=True,
+        viewonly=True,
+    )
 
 
-class Route(BaseModel):
-    __tablename__ = "shuttle_route"
+class ShuttleRoute(BaseModel):
+    __tablename__ = 'shuttle_route'
     name: Mapped[str] = \
-        mapped_column("route_name", String(15), primary_key=True)
+        mapped_column('route_name', String(15), primary_key=True)
     # Description
     korean: Mapped[str] = \
-        mapped_column("route_description_korean", String(100))
+        mapped_column('route_description_korean', String(100))
     english: Mapped[str] = \
-        mapped_column("route_description_english", String(100))
+        mapped_column('route_description_english', String(100))
     # Route
-    tags: Mapped[str] = mapped_column("route_tag", String(10))
+    tags: Mapped[str] = mapped_column('route_tag', String(10))
     # Start Stop
-    start_stop_id: Mapped[str] = mapped_column("start_stop", String(15))
-    start_stop: Mapped["Stop"] = relationship(back_populates="start_routes")
+    start_stop_id: Mapped[str] = mapped_column('start_stop', String(15))
+    start_stop: Mapped['ShuttleStop'] = relationship(
+        'ShuttleStop',
+        foreign_keys='ShuttleRoute.start_stop_id',
+        primaryjoin='ShuttleRoute.start_stop_id == ShuttleStop.name',
+        uselist=False,
+        viewonly=True,
+    )
     # End Stop
-    end_stop_id: Mapped[str] = mapped_column("end_stop", String(15))
-    end_stop: Mapped["Stop"] = relationship(back_populates="end_routes")
+    end_stop_id: Mapped[str] = mapped_column('end_stop', String(15))
+    end_stop: Mapped['ShuttleStop'] = relationship(
+        'ShuttleStop',
+        foreign_keys='ShuttleRoute.end_stop_id',
+        primaryjoin='ShuttleRoute.end_stop_id == ShuttleStop.name',
+        uselist=False,
+        viewonly=True,
+    )
     # Stops that this route passes through
-    stops: Mapped["RouteStop"] = relationship(back_populates="route")
+    stops: Mapped[list['ShuttleRouteStop']] = relationship(
+        'ShuttleRouteStop',
+        foreign_keys='ShuttleRoute.name',
+        primaryjoin='ShuttleRoute.name == ShuttleRouteStop.route_name',
+        uselist=True,
+        viewonly=True,
+    )
 
 
-class RouteStop(BaseModel):
-    __tablename__ = "shuttle_route_stop"
+class ShuttleRouteStop(BaseModel):
+    __tablename__ = 'shuttle_route_stop'
     # Route - RouteStop: 1 - N
     route_name: Mapped[str] = \
-        mapped_column("route_name", String(15), primary_key=True)
-    route: Mapped["Route"] = relationship(back_populates="stops")
+        mapped_column('route_name', String(15), primary_key=True)
+    route: Mapped['ShuttleRoute'] = relationship(
+        'ShuttleRoute',
+        foreign_keys='ShuttleRouteStop.route_name',
+        primaryjoin='ShuttleRouteStop.route_name == ShuttleRoute.name',
+        uselist=False,
+        viewonly=True,
+    )
     # Stop - RouteStop: 1 - N
     stop_name: Mapped[str] = \
-        mapped_column("stop_name", String(15), primary_key=True)
-    stop: Mapped["Stop"] = relationship(back_populates="routes")
+        mapped_column('stop_name', String(15), primary_key=True)
+    stop: Mapped['ShuttleStop'] = relationship(
+        'ShuttleStop',
+        foreign_keys='ShuttleRouteStop.stop_name',
+        primaryjoin='ShuttleRouteStop.stop_name == ShuttleStop.name',
+        uselist=False,
+        viewonly=True,
+    )
     # RouteStop
-    stop_order: Mapped[int] = mapped_column("stop_order", Integer)
-    cumulative_time: Mapped[int] = mapped_column("cumulative_time", Integer)
+    stop_order: Mapped[int] = mapped_column('stop_order', Integer)
+    cumulative_time: Mapped[int] = mapped_column('cumulative_time', Integer)
     # Timetable
-    timetable: Mapped[List["TimetableItem"]] = \
-        relationship(back_populates="route_stop")
+    timetable: Mapped[List['ShuttleTimetableItem']] = relationship(
+        'ShuttleTimetableItem',
+        foreign_keys=[route_name, stop_name],
+        primaryjoin='and_('
+                    'ShuttleTimetableItem.route_name == '
+                    'ShuttleRouteStop.route_name,'
+                    'ShuttleTimetableItem.stop_name == '
+                    'ShuttleRouteStop.stop_name)',
+        uselist=True,
+        viewonly=True,
+    )
 
 
-class PeriodType(BaseModel):
-    __tablename__ = "shuttle_period_type"
+class ShuttlePeriodType(BaseModel):
+    __tablename__ = 'shuttle_period_type'
     name: Mapped[str] = \
-        mapped_column("period_type_name", String(20), primary_key=True)
+        mapped_column('period_type_name', String(20), primary_key=True)
     # Periods that this type is a part of
-    periods: Mapped["Period"] = relationship(back_populates="type")
+    periods: Mapped['ShuttlePeriod'] = relationship(
+        'ShuttlePeriod',
+        foreign_keys='ShuttlePeriodType.name',
+        primaryjoin='ShuttlePeriodType.name == ShuttlePeriod.period_type_name',
+        uselist=False,
+        viewonly=True,
+    )
 
 
-class Period(BaseModel):
-    __tablename__ = "shuttle_period"
+class ShuttlePeriod(BaseModel):
+    __tablename__ = 'shuttle_period'
     period_type_name: Mapped[str] = \
-        mapped_column("period_type", String(20), primary_key=True)
-    period_type: Mapped["PeriodType"] = relationship(back_populates="periods")
+        mapped_column('period_type', String(20), primary_key=True)
+    period_type: Mapped['ShuttlePeriodType'] = relationship(
+        'ShuttlePeriodType',
+        foreign_keys='ShuttlePeriod.period_type_name',
+        primaryjoin='ShuttlePeriod.period_type_name == '
+                    'ShuttlePeriodType.name',
+        uselist=False,
+        viewonly=True,
+    )
     # Period
     start: Mapped[datetime.datetime] = \
-        mapped_column("period_start", DateTime, primary_key=True)
+        mapped_column('period_start', DateTime, primary_key=True)
     end: Mapped[datetime.datetime] = \
-        mapped_column("period_end", DateTime, primary_key=True)
+        mapped_column('period_end', DateTime, primary_key=True)
 
 
-class TimetableItem(BaseModel):
-    __tablename__ = "shuttle_timetable"
+class ShuttleTimetableItem(BaseModel):
+    __tablename__ = 'shuttle_timetable'
     # Period - TimetableItem: 1 - N
     period_type_name: Mapped[str] = \
-        mapped_column("period_type", String(20), primary_key=True)
-    period_type: Mapped["PeriodType"] = \
-        relationship(back_populates="timetable")
+        mapped_column('period_type', String(20), primary_key=True)
+    period_type: Mapped['ShuttlePeriodType'] = relationship(
+        'ShuttlePeriodType',
+        foreign_keys='ShuttleTimetableItem.period_type_name',
+        primaryjoin='ShuttleTimetableItem.period_type_name == '
+                    'ShuttlePeriodType.name',
+        uselist=False,
+        viewonly=True,
+    )
     # Weekday
-    weekday: Mapped[bool] = mapped_column("weekday", Boolean, primary_key=True)
+    weekday: Mapped[bool] = mapped_column('weekday', Boolean, primary_key=True)
     # RouteStop - TimetableItem: 1 - N
     route_name: Mapped[str] = \
-        mapped_column("route_name", String(15), primary_key=True)
+        mapped_column('route_name', String(15), primary_key=True)
     stop_name: Mapped[str] = \
-        mapped_column("stop_name", String(15), primary_key=True)
-    route_stop: Mapped["RouteStop"] = relationship(back_populates="timetable")
+        mapped_column('stop_name', String(15), primary_key=True)
+    route_stop: Mapped['ShuttleRouteStop'] = relationship(
+        'ShuttleRouteStop',
+        foreign_keys=[route_name, stop_name],
+        primaryjoin='and_('
+                    'ShuttleTimetableItem.route_name == '
+                    'ShuttleRouteStop.route_name,'
+                    'ShuttleTimetableItem.stop_name == '
+                    'ShuttleRouteStop.stop_name)',
+        uselist=False,
+        viewonly=True,
+    )
     departure_time: Mapped[datetime.datetime] = \
-        mapped_column("departure_time", DateTime, primary_key=True)
+        mapped_column('departure_time', DateTime, primary_key=True)
