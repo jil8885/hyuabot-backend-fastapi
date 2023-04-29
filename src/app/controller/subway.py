@@ -36,7 +36,7 @@ async def get_station_list(
             RouteStation.station_name,
             RouteStation.line_id,
             RouteStation.id,
-        )
+        ),
     )
 
     query_result = (
@@ -103,7 +103,7 @@ async def get_station_arrival(
         where(RouteStation.id == station_id). \
         options(
         selectinload(RouteStation.realtime).selectinload(
-            RealtimeItem.destination
+            RealtimeItem.destination,
         ),
         selectinload(RouteStation.timetable).selectinload(
             TimetableItem.start_station,
@@ -222,7 +222,7 @@ async def get_station_arrival(
         timetable=TimetableResponse(
             up=up_timetable,
             down=down_timetable,
-        )
+        ),
     )
 
 
