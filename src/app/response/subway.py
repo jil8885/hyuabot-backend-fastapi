@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 class CurrentStatus(BaseModel):
     location: str = Field(..., alias='location')
     time: datetime.timedelta = Field(..., alias='time')
-    status: str = Field(..., alias='status')
+    status: int = Field(..., alias='status')
 
 
 class Origin(BaseModel):

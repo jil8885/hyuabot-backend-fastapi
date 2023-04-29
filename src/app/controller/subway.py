@@ -30,9 +30,12 @@ async def get_station_list(
     Returns:
         SubwayStationResponse: Response contains of subway stations.
     """
-    statement = select(RouteStation). \
-        where(RouteStation.station_name.like(f'%{name}%') if name else True). \
-        options(load_only(
+    if name is not None:
+        statement = select(RouteStation). \
+            where(RouteStation.station_name.like(f'%{name}%'))
+    else:
+        statement = select(RouteStation)
+    statement.options(load_only(
             RouteStation.station_name,
             RouteStation.line_id,
             RouteStation.id,
@@ -67,7 +70,7 @@ async def get_station(
     """
     statement = select(RouteStation).where(RouteStation.id == station_id)
 
-    query_result: RouteStation = (
+    query_result: RouteStation | None = (
         await db_session.execute(statement)
     ).scalars().one_or_none()
     if query_result is None:
@@ -113,7 +116,7 @@ async def get_station_arrival(
         ),
     )
 
-    query_result: RouteStation = (
+    query_result: RouteStation | None = (
         await db_session.execute(statement)
     ).scalars().one_or_none()
     if query_result is None:
@@ -183,7 +186,7 @@ async def get_station_arrival(
                     ),
                     current=CurrentStatus(
                         location=x.location,
-                        time=x.minute,
+                        time=timedelta(minutes=x.minute),
                         status=x.status,
                     ),
                     express=x.express,
@@ -206,7 +209,7 @@ async def get_station_arrival(
                     ),
                     current=CurrentStatus(
                         location=x.location,
-                        time=x.minute,
+                        time=timedelta(minutes=x.minute),
                         status=x.status,
                     ),
                     express=x.express,
@@ -251,7 +254,7 @@ async def get_station_timetable(
             TimetableItem.destination,
         ),
     )
-    query_result: RouteStation = (
+    query_result: RouteStation | None = (
         await db_session.execute(statement)
     ).scalars().one_or_none()
     if query_result is None:
