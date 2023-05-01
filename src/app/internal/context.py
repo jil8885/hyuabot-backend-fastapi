@@ -32,5 +32,5 @@ class AppContext(NamedTuple):
         """
         try:
             return app.extra.context
-        except KeyError:
+        except AttributeError:
             raise RuntimeError('App context is not initialized')
