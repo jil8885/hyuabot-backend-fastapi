@@ -7,16 +7,23 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.model.calendar import Holiday
 from app.model.shuttle import ShuttlePeriod
 
+exclude_holidays = [
+    datetime.date(2021, 5, 1),
+]
 korean_holidays = holidays.KR()
 lunar_calendar = KoreanLunarCalendar()
 
 
 def is_weekends(value: datetime.date = datetime.date.today()) -> bool:
+    if filter(lambda x: (x.month, x.day) == (value.month, value.day),
+              exclude_holidays):
+        return False
     return value.weekday() >= 5 or value in korean_holidays
 
 
 def current_time() -> datetime.time:
-    return datetime.datetime.now().time()
+    tz = datetime.timezone(datetime.timedelta(hours=9))
+    return datetime.datetime.now(tz=tz).time()
 
 
 async def current_period(
@@ -25,8 +32,8 @@ async def current_period(
 ) -> str:
     statement = select(ShuttlePeriod).where(
         and_(
-            ShuttlePeriod.start <= value.time(),
-            ShuttlePeriod.end >= value.time(),
+            ShuttlePeriod.start <= value,
+            ShuttlePeriod.end >= value,
         ),
     )
     query_result = (await db_session.execute(statement)).scalars().first()
@@ -47,7 +54,9 @@ async def is_holiday(
                 Holiday.calendar_type == 'solar',
             ),
             and_(
-                Holiday.holiday_date == lunar_calendar.LunarIsoFormat(),
+                Holiday.holiday_date == datetime.datetime.strptime(
+                    lunar_calendar.LunarIsoFormat(), '%Y-%m-%d',
+                ),
                 Holiday.calendar_type == 'lunar',
             ),
         ),
