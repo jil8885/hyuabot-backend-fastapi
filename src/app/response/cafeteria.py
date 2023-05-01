@@ -2,7 +2,7 @@ import datetime
 
 from pydantic import BaseModel, Field
 
-from app.response.campus import Campus
+from app.response.campus import CampusListItemResponse
 
 
 class Menu(BaseModel):
@@ -23,5 +23,5 @@ class Restaurant(BaseModel):
     menu: list[Menu] = Field(..., alias="menu")
 
 
-class RestaurantList(Campus):
+class RestaurantList(CampusListItemResponse):
     restaurants: list[Restaurant] = Field(..., alias="restaurants")
