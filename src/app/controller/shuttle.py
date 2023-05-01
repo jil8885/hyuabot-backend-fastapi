@@ -1,4 +1,4 @@
-from datetime import timedelta, datetime
+import datetime
 
 from fastapi import APIRouter, Depends
 from sqlalchemy import select, and_, ColumnElement
@@ -17,6 +17,18 @@ from app.response.shuttle import RouteListResponse, RouteListItemResponse, \
     ArrivalResponseItem, TimetableResponse, TimetableResponseItem
 
 shuttle_router = APIRouter()
+
+
+def filter_timetable_item(
+    item: ShuttleTimetableItem,
+    period: str,
+    weekdays: bool,
+    now: datetime.datetime,
+) -> bool:
+    return (item.period_type_name == period
+            and item.weekday == weekdays
+            and datetime.datetime.combine(
+                now.date(), item.departure_time) >= now)
 
 
 @shuttle_router.get('/route', response_model=RouteListResponse)
@@ -82,7 +94,7 @@ async def get_shuttle_route_by_id(
         stop_list.append(RouteStopItemResponse(
             name=stop.stop_name,
             sequence=stop.stop_order,
-            time=timedelta(minutes=stop.cumulative_time),
+            time=datetime.timedelta(minutes=stop.cumulative_time),
         ))
     return RouteItemResponse(
         name=query_result.name,
@@ -173,7 +185,7 @@ async def get_shuttle_stop_arrival(
     Returns:
         ArrivalResponse: Arrival time of the shuttle stop.
     """
-    now = datetime.now()
+    now = datetime.datetime.now()
     # Complete the query parameters
     if period is None:
         period = await current_period(db_session, now)
@@ -207,18 +219,17 @@ async def get_shuttle_stop_arrival(
             departure_timetable = []
             remaining_timetable = []
             if holiday != 'halt':
-                for timetable in list(filter(
-                        lambda x: (x.period_type_name == period
-                                   and x.weekday == weekdays
-                                   and datetime.combine(
-                                    now.date(), x.departure_time) >= now),
-                        route.timetable,
-                )):  # type: ShuttleTimetableItem
-                    if timetable.departure_time >= now.time():
-                        departure_timetable.append(timetable.departure_time)
+                for timetable_by_route in [
+                    timetable for timetable in route.timetable
+                    if filter_timetable_item(timetable, period, weekdays, now)
+                ]:  # type: ShuttleTimetableItem
+                    if timetable_by_route.departure_time >= now.time():
+                        departure_timetable.append(
+                            timetable_by_route.departure_time)
                         remaining_timetable.append(
-                            datetime.combine(
-                                now.date(), timetable.departure_time) - now,
+                            datetime.datetime.combine(
+                                now.date(),
+                                timetable_by_route.departure_time) - now,
                         )
             timetable_list.append(ArrivalResponseItem(
                 name=route.route_name,
@@ -231,15 +242,12 @@ async def get_shuttle_stop_arrival(
         }
         for route in query_result.routes:
             if holiday != 'halt':
-                for timetable in filter(
-                        lambda x: (x.period_type_name == period
-                                   and x.weekday == weekdays
-                                   and datetime.combine(
-                                    now.date(), x.departure_time) >= now),
-                        route.timetable,
-                ):  # type: ShuttleTimetableItem
+                for timetable_by_tag in [
+                    timetable for timetable in route.timetable
+                    if filter_timetable_item(timetable, period, weekdays, now)
+                ]:  # type: ShuttleTimetableItem
                     timetable_dict[route.route.tags].append(
-                        timetable.departure_time,
+                        timetable_by_tag.departure_time,
                     )
         for tag, timetable_items in timetable_dict.items():
             merged_timetable = sorted(timetable_items)
@@ -248,7 +256,7 @@ async def get_shuttle_stop_arrival(
             for timetable_item in merged_timetable:
                 departure_timetable.append(timetable_item)
                 remaining_timetable.append(
-                    datetime.combine(
+                    datetime.datetime.combine(
                         now.date(), timetable_item) - now,
                 )
             timetable_list.append(ArrivalResponseItem(
@@ -270,7 +278,7 @@ async def get_shuttle_stop_arrival(
 
 @shuttle_router.get(
     '/stop/{stop_id}/timetable', response_model=TimetableResponse)
-async def get_shuttle_stop_arrival(
+async def get_shuttle_stop_timetable(
         stop_id: str,
         period: str | None = None,
         output: str | None = 'tag',
@@ -280,14 +288,12 @@ async def get_shuttle_stop_arrival(
     Args:
         stop_id (str): ID of the shuttle stop.
         period (str): Period of the semester.
-        weekdays (str): Weekdays of the week.
-        holiday (str): Holiday of the week.
         output (str): Output format.
         db_session (AsyncSession): Database session.
     Returns:
         TimetableResponse: Timetable of the shuttle stop.
     """
-    now = datetime.now()
+    now = datetime.datetime.now()
     # Complete the query parameters
     if period is None:
         period = await current_period(db_session, now)
@@ -316,14 +322,16 @@ async def get_shuttle_stop_arrival(
         for route in query_result.routes:  # type: ShuttleRouteStop
             weekdays_timetable = []
             weekends_timetable = []
-            for timetable in list(filter(
+            for timetable_by_route in list(filter(
                     lambda x: x.period_type_name == period,
                     route.timetable,
             )):  # type: ShuttleTimetableItem
-                if timetable.weekday is True:
-                    weekdays_timetable.append(timetable.departure_time)
+                if timetable_by_route.weekday is True:
+                    weekdays_timetable.append(
+                        timetable_by_route.departure_time)
                 else:
-                    weekends_timetable.append(timetable.departure_time)
+                    weekends_timetable.append(
+                        timetable_by_route.departure_time)
             timetable_list.append(TimetableResponseItem(
                 name=route.route_name,
                 weekdays=weekdays_timetable,
@@ -349,17 +357,17 @@ async def get_shuttle_stop_arrival(
             },
         }
         for route in query_result.routes:
-            for timetable in filter(
+            for timetable_by_tag in filter(
                     lambda x: x.period_type_name == period,
                     route.timetable,
             ):  # type: ShuttleTimetableItem
-                if timetable.weekday is True:
+                if timetable_by_tag.weekday is True:
                     timetable_dict[route.route.tags]['weekdays'].append(
-                        timetable.departure_time,
+                        timetable_by_tag.departure_time,
                     )
                 else:
                     timetable_dict[route.route.tags]['weekends'].append(
-                        timetable.departure_time,
+                        timetable_by_tag.departure_time,
                     )
         for tag, timetable_for_tag in timetable_dict.items():
             timetable_list.append(TimetableResponseItem(

@@ -207,7 +207,7 @@ async def test_shuttle_arrival_holiday_weekends_query():
         response = await client.get('/shuttle/stop/shuttlecock_o/arrival',
                                     params={
                                         'holiday': 'weekends',
-                                        'output': 'route'
+                                        'output': 'route',
                                     })
         assert response.status_code == 200
         response_body = response.json()
@@ -226,6 +226,7 @@ async def test_shuttle_arrival_holiday_weekends_query():
                 assert len(str(departure_time).split(':')) == 3
             for remaining_time in departure['remaining_time']:
                 assert type(remaining_time) == float
+
 
 @pytest.mark.asyncio
 async def test_shuttle_arrival_holiday_halt_query():

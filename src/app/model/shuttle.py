@@ -1,7 +1,7 @@
 import datetime
 from typing import List
 
-from sqlalchemy import String, Float, Integer, DateTime, Boolean
+from sqlalchemy import String, Float, Integer, DateTime, Boolean, Time
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.model import BaseModel
@@ -166,5 +166,5 @@ class ShuttleTimetableItem(BaseModel):
         uselist=False,
         viewonly=True,
     )
-    departure_time: Mapped[datetime.datetime] = \
-        mapped_column('departure_time', DateTime, primary_key=True)
+    departure_time: Mapped[datetime.time] = \
+        mapped_column('departure_time', Time, primary_key=True)
