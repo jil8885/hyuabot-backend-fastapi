@@ -124,9 +124,9 @@ async def get_commute_shuttle_route_by_id(
     now = datetime.datetime.now()
     if is_weekends(now):
         status_message = 'ERROR.WEEKENDS'
-    elif current_period(db_session, now) != 'semester':
+    elif await current_period(db_session, now) != 'semester':
         status_message = 'ERROR.NOT_SEMESTER'
-    elif is_holiday(db_session, now) != 'normal':
+    elif await is_holiday(db_session, now) != 'normal':
         status_message = 'ERROR.HOLIDAY'
     else:
         status_message = 'SUCCESS'
@@ -163,9 +163,9 @@ async def get_commute_shuttle_arrival(
     now = datetime.datetime.now()
     if is_weekends(now):
         status_message = 'ERROR.WEEKENDS'
-    elif current_period(db_session, now) != 'semester':
+    elif await current_period(db_session, now) != 'semester':
         status_message = 'ERROR.NOT_SEMESTER'
-    elif is_holiday(db_session, now) != 'normal':
+    elif await is_holiday(db_session, now) != 'normal':
         status_message = 'ERROR.HOLIDAY'
     else:
         status_message = 'SUCCESS'
