@@ -10,6 +10,7 @@ from app.controller.bus import bus_router
 from app.controller.cafeteria import cafeteria_router
 from app.controller.commute_shuttle import commute_shuttle_router
 from app.controller.library import library_router
+from app.controller.query import graphql_router
 from app.controller.shuttle import shuttle_router
 from app.controller.subway import subway_router
 from app.dependancies.database import get_db_session
@@ -66,6 +67,7 @@ def create_app(settings: AppSettings) -> App:
         commute_shuttle_router, prefix='/commute-shuttle', tags=['commute'],
     )
     app.include_router(shuttle_router, prefix='/shuttle', tags=['shuttle'])
+    app.include_router(graphql_router, prefix='/query', tags=['graphql'])
     return app
 
 
