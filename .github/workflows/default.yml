@@ -1,5 +1,6 @@
 name: default
 
+on: [push, pull_request]
 jobs:
   lint:
     runs-on: ["self-hosted", "X64"]
@@ -75,10 +76,7 @@ jobs:
         python -m pytest -m 'not integration' -v --cov=src
   deploy:
     runs-on: ["self-hosted", "ARM64"]
-    on:
-      push:
-        tags:
-          - "v*"
+    if: startsWith(github.event.ref, 'refs/tags/v')
     needs: test
     steps:
     - uses: actions/checkout@v3
