@@ -1,3 +1,4 @@
+import datetime
 from typing import Optional
 
 import strawberry
@@ -7,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from strawberry.fastapi import GraphQLRouter
 from strawberry.types import Info
 
+from app.controller.query.cafeteria import CafeteriaItem, query_cafeteria
 from app.controller.query.library import ReadingRoomItem, \
     ReadingRoomInformation, ReadingRoomSeat
 from app.dependancies.database import get_db_session
@@ -57,6 +59,24 @@ class Query:
                 ),
                 updated_at=row.last_updated_time,
             ))
+        return result
+
+    @strawberry.field
+    async def cafeteria(
+        self,
+        info: Info,
+        campus: Optional[int] = None,
+        restaurant: Optional[list[int]] = None,
+        date: Optional[datetime.date] = None,
+        slot: Optional[str] = None,
+    ) -> list[CafeteriaItem]:
+        result: list[CafeteriaItem] = await query_cafeteria(
+            info.context['db_session'],
+            campus=campus,
+            restaurant=restaurant,
+            date=date,
+            slot=slot,
+        )
         return result
 
 

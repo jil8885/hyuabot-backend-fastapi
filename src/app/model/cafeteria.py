@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 class Restaurant(BaseModel):
     __tablename__ = 'restaurant'
     id: Mapped[int] = mapped_column('restaurant_id', Integer, primary_key=True)
+    name: Mapped[str] = mapped_column('restaurant_name', String(50))
     # Campus - Restaurant: 1 - N
     campus_id: Mapped[int] = mapped_column(ForeignKey('campus.campus_id'))
     campus: Mapped['Campus'] = relationship(back_populates='restaurants')
