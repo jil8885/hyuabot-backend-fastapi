@@ -1,6 +1,5 @@
 name: default
 
-on: [push, pull_request]
 jobs:
   lint:
     runs-on: ["self-hosted", "X64"]
