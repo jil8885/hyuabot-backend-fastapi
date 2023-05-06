@@ -9,11 +9,33 @@ from strawberry.types import Info
 
 from app.controller.query.cafeteria import CafeteriaItem, query_cafeteria
 from app.controller.query.library import ReadingRoomItem, query_reading_room
+from app.controller.query.subway import StationItem, query_subway
 from app.dependancies.database import get_db_session
 
 
 @strawberry.type
 class Query:
+    @strawberry.field
+    async def subway(
+        self,
+        info: Info,
+        station: Optional[list[str]] = None,
+        heading: Optional[str] = None,
+        weekday: Optional[str] = None,
+        start: Optional[datetime.time] = None,
+        end: Optional[datetime.time] = None,
+    ) -> list[StationItem]:
+        db_session: AsyncSession = info.context['db_session']
+        result = await query_subway(
+            db_session,
+            station=station,
+            heading=heading,
+            weekday=weekday,
+            timetable_start=start,
+            timetable_end=end,
+        )
+        return result
+
     @strawberry.field
     async def reading_room(
         self,
