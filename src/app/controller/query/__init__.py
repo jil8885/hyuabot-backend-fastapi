@@ -10,6 +10,8 @@ from strawberry.types import Info
 from app.controller.query.bus import query_bus, BusRouteStopItem, \
     BusRouteStopQuery
 from app.controller.query.cafeteria import CafeteriaItem, query_cafeteria
+from app.controller.query.commute_shuttle import query_commute_shuttle, \
+    CommuteShuttleRoute
 from app.controller.query.library import ReadingRoomItem, query_reading_room
 from app.controller.query.subway import StationItem, query_subway
 from app.dependancies.database import get_db_session
@@ -17,6 +19,19 @@ from app.dependancies.database import get_db_session
 
 @strawberry.type
 class Query:
+    @strawberry.field
+    async def commute_shuttle(
+        self,
+        info: Info,
+        name: Optional[str] = None,
+    ) -> list[CommuteShuttleRoute]:
+        db_session: AsyncSession = info.context['db_session']
+        result = await query_commute_shuttle(
+            db_session,
+            name=name,
+        )
+        return result
+
     @strawberry.field
     async def bus(
         self,
