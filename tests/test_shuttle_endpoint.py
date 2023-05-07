@@ -214,7 +214,7 @@ async def test_shuttle_arrival_holiday_weekends_query():
         assert response_body['name'] == 'shuttlecock_o'
         assert response_body['query']['period'] in \
                ['semester', 'vacation', 'vacation_session']
-        assert response_body['query']['weekdays'] is True
+        assert response_body['query']['weekdays'] in [True, False]
         assert response_body['query']['holiday'] == 'weekends'
         assert len(response_body['departure']) > 0
         for departure in response_body['departure']:

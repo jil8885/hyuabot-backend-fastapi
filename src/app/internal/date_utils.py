@@ -15,9 +15,9 @@ lunar_calendar = KoreanLunarCalendar()
 
 
 def is_weekends(value: datetime.date = datetime.date.today()) -> bool:
-    if filter(lambda x: (x.month, x.day) == (value.month, value.day),
-              exclude_holidays):
-        return False
+    if len(list(filter(lambda x: (x.month, x.day) == (value.month, value.day),
+                       exclude_holidays))):
+        return value.weekday() >= 5
     return value.weekday() >= 5 or value in korean_holidays
 
 
@@ -27,8 +27,8 @@ def current_time() -> datetime.time:
 
 
 async def current_period(
-    db_session: AsyncSession,
-    value: datetime.datetime = datetime.datetime.now(),
+        db_session: AsyncSession,
+        value: datetime.datetime = datetime.datetime.now(),
 ) -> str:
     statement = select(ShuttlePeriod).where(
         and_(
@@ -43,8 +43,8 @@ async def current_period(
 
 
 async def is_holiday(
-    db_session: AsyncSession,
-    value: datetime.date = datetime.date.today(),
+        db_session: AsyncSession,
+        value: datetime.date = datetime.date.today(),
 ) -> str:
     lunar_calendar.setSolarDate(value.year, value.month, value.day)
     statement = select(Holiday).where(
@@ -61,7 +61,7 @@ async def is_holiday(
             ),
         ),
     )
-    query_result = (await db_session.execute(statement)).scalars()\
+    query_result = (await db_session.execute(statement)).scalars() \
         .one_or_none()
     if query_result is None:
         return 'normal'
