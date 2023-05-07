@@ -76,7 +76,7 @@ jobs:
         python -m pytest -m 'not integration' -v --cov=src
   deploy:
     runs-on: ["self-hosted", "ARM64"]
-    if: startsWith(github.event.ref, 'refs/tags/v')
+    if: startsWith(github.event.ref, 'refs/tags/v') || github.ref == 'refs/heads/feat/github-workflow'
     needs: test
     steps:
     - uses: actions/checkout@v3
