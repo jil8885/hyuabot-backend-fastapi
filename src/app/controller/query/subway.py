@@ -2,7 +2,7 @@ import datetime
 from typing import Optional
 
 import strawberry
-from sqlalchemy import select, true, or_, and_, ColumnElement
+from sqlalchemy import select, true, and_, ColumnElement
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -61,95 +61,61 @@ async def query_subway(
     timetable_start: Optional[datetime.time] = None,
     timetable_end: Optional[datetime.time] = None,
 ):
-    station_filters: list[ColumnElement] = []
-    realtime_filters: list[ColumnElement] = []
-    timetable_filters: list[ColumnElement] = []
+    filters: list[ColumnElement] = []
 
     if station is not None:
-        station_filters.append(RouteStation.id.in_(station))
-        realtime_filters.append(RealtimeItem.station_id.in_(station))
-        timetable_filters.append(TimetableItem.station_id.in_(station))
-    if heading is not None:
-        realtime_heading = 'true' if heading == 'up' else 'false'
-        timetable_filters.append(TimetableItem.heading == heading)
-        realtime_filters.append(RealtimeItem.heading == realtime_heading)
-    if timetable_start is not None:
-        timetable_filters.append(or_(
-            TimetableItem.departure_time >= timetable_start,
-            TimetableItem.departure_time <= datetime.time(4, 59, 59),
-        ))
-    if timetable_end is not None:
-        timetable_filters.append(
-            TimetableItem.departure_time <= timetable_end)
-    if weekday is not None:
-        timetable_filters.append(TimetableItem.weekday == weekday)
+        filters.append(RouteStation.id.in_(station))
 
     station_statement = select(RouteStation).where(and_(
-        true(), *station_filters,
+        true(), *filters,
     )).options(
         selectinload(RouteStation.line),
+        selectinload(RouteStation.timetable),
+        selectinload(RouteStation.realtime),
     )
     stations = (await db_session.execute(station_statement)).scalars().all()
 
-    realtime_statement = select(RealtimeItem).where(and_(
-        true(), *realtime_filters,
-    )).options(
-        selectinload(RealtimeItem.destination),
-    )
-    realtime_dict: dict[str, list[RealtimeItem]] = {}
-    realtime_items = (
-        await db_session.execute(realtime_statement)
-    ).scalars().all()
-    for realtime_item in realtime_items:  # type: RealtimeItem
-        if realtime_item.station_id not in realtime_dict:
-            realtime_dict[realtime_item.station_id] = []
-        realtime_dict[realtime_item.station_id].append(realtime_item)
-
-    timetable_statement = select(TimetableItem).where(and_(
-        true(), *timetable_filters,
-    )).options(
-        selectinload(TimetableItem.destination),
-    )
-    timetable_dict: dict[str, list[TimetableItem]] = {}
-    timetable_items = (
-        await db_session.execute(timetable_statement)
-    ).scalars().all()
-    for timetable_item in timetable_items:  # type: TimetableItem
-        if timetable_item.station_id not in timetable_dict:
-            timetable_dict[timetable_item.station_id] = []
-        timetable_dict[timetable_item.station_id].append(timetable_item)
     result: list[StationItem] = []
     for station_item in stations:  # type: RouteStation
         station_timetable_dict: dict[str, list[TimetableItemResponse]] = \
             {'up': [], 'down': []}
         station_realtime_dict: dict[str, list[RealtimeItemResponse]] = \
             {'up': [], 'down': []}
-        if station_item.id in timetable_dict:
-            for timetable_item in timetable_dict[station_item.id]:
-                station_timetable_dict[timetable_item.heading].append(
-                    TimetableItemResponse(
-                        terminal_id=timetable_item.destination.id,
-                        terminal_name=timetable_item.destination.station_name,
-                        weekday=timetable_item.weekday,
-                        time=timetable_item.departure_time,
-                    ),
-                )
-        if station_item.id in realtime_dict:
-            for realtime_item in realtime_dict[station_item.id]:
-                heading = 'up' if realtime_item.heading == 'true' else 'down'
-                station_realtime_dict[heading].append(
-                    RealtimeItemResponse(
-                        terminal_id=realtime_item.destination.id,
-                        terminal_name=realtime_item.destination.station_name,
-                        sequence=realtime_item.sequence,
-                        location=realtime_item.location,
-                        remaining_station=realtime_item.stop,
-                        remaining_time=realtime_item.minute,
-                        train_no=realtime_item.train,
-                        is_express=realtime_item.express,
-                        is_last=realtime_item.last,
-                    ),
-                )
+        for timetable_item in station_item.timetable:  # type: TimetableItem
+            if heading is not None and timetable_item.heading != heading:
+                continue
+            if weekday is not None and timetable_item.weekday != weekday:
+                continue
+            if timetable_start is not None and \
+                    (timetable_start >
+                     timetable_item.departure_time > datetime.time(4, 0)):
+                continue
+            if timetable_end is not None and \
+                    timetable_end < timetable_item.departure_time:
+                continue
+            station_timetable_dict[timetable_item.heading].append(
+                TimetableItemResponse(
+                    terminal_id=timetable_item.destination.id,
+                    terminal_name=timetable_item.destination.station_name,
+                    weekday=timetable_item.weekday,
+                    time=timetable_item.departure_time,
+                ),
+            )
+        for realtime_item in station_item.realtime:  # type: RealtimeItem
+            heading = 'up' if realtime_item.heading == 'true' else 'down'
+            station_realtime_dict[heading].append(
+                RealtimeItemResponse(
+                    terminal_id=realtime_item.destination.id,
+                    terminal_name=realtime_item.destination.station_name,
+                    sequence=realtime_item.sequence,
+                    location=realtime_item.location,
+                    remaining_station=realtime_item.stop,
+                    remaining_time=realtime_item.minute,
+                    train_no=realtime_item.train,
+                    is_express=realtime_item.express,
+                    is_last=realtime_item.last,
+                ),
+            )
         result.append(StationItem(
             station_id=station_item.id,
             station_name=station_item.station_name,
