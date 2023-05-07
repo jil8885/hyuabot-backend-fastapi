@@ -6,7 +6,7 @@ from sqlalchemy import select, true, and_, ColumnElement
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.model.subway import RouteStation, TimetableItem, RealtimeItem
+from app.model.subway import RouteStation
 
 
 @strawberry.type
@@ -81,7 +81,7 @@ async def query_subway(
             {'up': [], 'down': []}
         station_realtime_dict: dict[str, list[RealtimeItemResponse]] = \
             {'up': [], 'down': []}
-        for timetable_item in station_item.timetable:  # type: TimetableItem
+        for timetable_item in station_item.timetable:
             if heading is not None and timetable_item.heading != heading:
                 continue
             if weekday is not None and timetable_item.weekday != weekday:
@@ -101,7 +101,7 @@ async def query_subway(
                     time=timetable_item.departure_time,
                 ),
             )
-        for realtime_item in station_item.realtime:  # type: RealtimeItem
+        for realtime_item in station_item.realtime:
             heading = 'up' if realtime_item.heading == 'true' else 'down'
             station_realtime_dict[heading].append(
                 RealtimeItemResponse(
