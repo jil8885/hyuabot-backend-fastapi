@@ -7,6 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from strawberry.fastapi import GraphQLRouter
 from strawberry.types import Info
 
+from app.controller.query.bus import query_bus, BusRouteStopItem, \
+    BusRouteStopQuery
 from app.controller.query.cafeteria import CafeteriaItem, query_cafeteria
 from app.controller.query.library import ReadingRoomItem, query_reading_room
 from app.controller.query.subway import StationItem, query_subway
@@ -16,14 +18,35 @@ from app.dependancies.database import get_db_session
 @strawberry.type
 class Query:
     @strawberry.field
-    async def subway(
+    async def bus(
         self,
         info: Info,
-        station: Optional[list[str]] = None,
-        heading: Optional[str] = None,
-        weekday: Optional[str] = None,
+        route_stop: list[BusRouteStopQuery],
+        weekdays: Optional[list[str]] = None,
+        date: datetime.date = datetime.date.today(),
         start: Optional[datetime.time] = None,
         end: Optional[datetime.time] = None,
+    ) -> list[BusRouteStopItem]:
+        db_session: AsyncSession = info.context['db_session']
+        result = await query_bus(
+            db_session,
+            route_stop=route_stop,
+            weekdays=weekdays,
+            date=date,
+            timetable_start=start,
+            timetable_end=end,
+        )
+        return result
+
+    @strawberry.field
+    async def subway(
+            self,
+            info: Info,
+            station: Optional[list[str]] = None,
+            heading: Optional[str] = None,
+            weekday: Optional[str] = None,
+            start: Optional[datetime.time] = None,
+            end: Optional[datetime.time] = None,
     ) -> list[StationItem]:
         db_session: AsyncSession = info.context['db_session']
         result = await query_subway(
@@ -38,11 +61,11 @@ class Query:
 
     @strawberry.field
     async def reading_room(
-        self,
-        info: Info,
-        campus: Optional[int] = None,
-        room: Optional[list[int]] = None,
-        active: Optional[bool] = None,
+            self,
+            info: Info,
+            campus: Optional[int] = None,
+            room: Optional[list[int]] = None,
+            active: Optional[bool] = None,
     ) -> list[ReadingRoomItem]:
         db_session: AsyncSession = info.context['db_session']
         result = await query_reading_room(
@@ -55,12 +78,12 @@ class Query:
 
     @strawberry.field
     async def cafeteria(
-        self,
-        info: Info,
-        campus: Optional[int] = None,
-        restaurant: Optional[list[int]] = None,
-        date: Optional[datetime.date] = None,
-        slot: Optional[str] = None,
+            self,
+            info: Info,
+            campus: Optional[int] = None,
+            restaurant: Optional[list[int]] = None,
+            date: Optional[datetime.date] = None,
+            slot: Optional[str] = None,
     ) -> list[CafeteriaItem]:
         result: list[CafeteriaItem] = await query_cafeteria(
             info.context['db_session'],
@@ -73,7 +96,7 @@ class Query:
 
 
 async def graphql_context(
-    db_session: AsyncSession = Depends(get_db_session),
+        db_session: AsyncSession = Depends(get_db_session),
 ) -> dict[str, AsyncSession]:
     """Function to get the GraphQL context.
     Args:
