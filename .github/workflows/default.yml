@@ -86,4 +86,5 @@ jobs:
       uses: docker/build-push-action@v4
       with:
         push: false
+        load: true
         tags: hyuabot-api-server-python:latest
