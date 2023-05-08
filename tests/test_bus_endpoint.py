@@ -110,6 +110,15 @@ async def test_bus_route_item():
 
 
 @pytest.mark.asyncio
+async def test_bus_route_item_no_value():
+    """Test bus route item endpoint."""
+    async with AsyncClient(app=app, base_url='http://test') as client:
+        # Get bus route item
+        response = await client.get('/bus/route/216000062')
+        assert response.status_code == 404
+
+
+@pytest.mark.asyncio
 async def test_bus_stop_arrival_list():
     """Test bus stop arrival list endpoint."""
     async with AsyncClient(app=app, base_url='http://test') as client:
