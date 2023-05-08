@@ -88,3 +88,6 @@ jobs:
         push: false
         load: true
         tags: hyuabot-api-server-python:latest
+    - name: Rollout dev python backend pod
+      run: |
+        kubectl -n hyuabot-prod rollout restart deployment/hyuabot-api-python-development
